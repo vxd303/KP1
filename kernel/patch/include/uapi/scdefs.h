@@ -76,7 +76,7 @@ struct su_profile
 
 #ifdef ANDROID
 #define SH_PATH "/system/bin/sh"
-#define SU_PATH "/system/bin/kp"
+#define SU_PATH "/system/bin/hoaqt"
 #define LEGACY_SU_PATH "/system/bin/su"
 #define ECHO_PATH "/system/bin/echo"
 #define KERNELPATCH_DATA_DIR "/data/adb/kp"
