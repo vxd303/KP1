@@ -88,7 +88,7 @@ struct su_profile
 #else
 #define SH_PATH "/usr/bin/sh"
 #define ECHO_PATH "/usr/bin/echo"
-#define SU_PATH "/usr/bin/kp"
+#define SU_PATH "/usr/bin/hoaqt"
 #define ALL_ALLOW_SCONTEXT "u:r:kernel:s0"
 #endif
 
