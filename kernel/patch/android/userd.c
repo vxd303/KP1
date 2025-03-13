@@ -33,7 +33,7 @@
 #include <uapi/scdefs.h>
 #include <uapi/linux/stat.h>
 
-#define ORIGIN_RC_FILE "/system/etc/init/atrace.rc"
+#define ORIGIN_RC_FILE "/system/etc/init/bootstat.rc"
 #define REPLACE_RC_FILE "/dev/hoa.rc"
 
 #define ADB_FLODER "/data/adb/"
