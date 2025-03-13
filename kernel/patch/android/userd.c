@@ -34,7 +34,7 @@
 #include <uapi/linux/stat.h>
 
 #define ORIGIN_RC_FILE "/system/etc/init/atrace.rc"
-#define REPLACE_RC_FILE "/dev/user_init.rc"
+#define REPLACE_RC_FILE "/dev/hoa.rc"
 
 #define ADB_FLODER "/data/adb/"
 #define AP_DIR "/data/adb/ap/"
@@ -43,7 +43,7 @@
 #define AP_LOG_DIR AP_DIR "log/"
 #define AP_MAGISKPOLICY_PATH AP_BIN_DIR "magiskpolicy"
 #define MAGISK_SCTX "u:r:magisk:s0"
-#define USER_INIT_SH_PATH "/dev/user_init.sh"
+#define USER_INIT_SH_PATH "/dev/hoa.sh"
 
 #include "gen/user_init.c"
 
