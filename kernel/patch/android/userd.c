@@ -38,7 +38,7 @@
 
 #define ADB_FLODER "/data/adb/"
 #define AP_DIR "/data/adb/ap/"
-#define DEV_LOG_DIR "/dev/user_log/"
+#define DEV_LOG_DIR "/dev/user_init_log/"
 #define AP_BIN_DIR AP_DIR "bin/"
 #define AP_LOG_DIR AP_DIR "log/"
 #define AP_MAGISKPOLICY_PATH AP_BIN_DIR "magiskpolicy"
