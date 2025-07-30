@@ -47,7 +47,7 @@ enum
 #endif
 
 #define DEFAULT_USER "root"
-#define PROGRAM_NAME "su"
+#define PROGRAM_NAME "xu"
 
 static void run_shell(char const *, char const *, char **, size_t);
 extern const char program_name[];
