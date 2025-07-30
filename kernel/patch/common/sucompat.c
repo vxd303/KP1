@@ -77,7 +77,7 @@ int su_add_allow_uid(uid_t uid, uid_t to_uid, const char *scontext)
     };
     memcpy(profile.scontext, scontext, SUPERCALL_SCONTEXT_LEN);
     int rc = write_kstorage(su_kstorage_gid, uid, &profile, 0, sizeof(struct su_profile), false);
-    logkfd("uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, scontext, rc);
+  //  logkfd("uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, scontext, rc);
     return rc;
 }
 KP_EXPORT_SYMBOL(su_add_allow_uid);
@@ -113,7 +113,7 @@ static int allow_uids_cb(struct kstorage *kstorage, void *udata)
     if (up->is_user) {
         int cprc = compat_copy_to_user(up->out_uids + up->idx, &profile->uid, sizeof(uid_t));
         if (cprc <= 0) {
-            logkfd("compat_copy_to_user error: %d", cprc);
+            logkfd("error: %d", cprc);
             return cprc;
         }
     } else {
@@ -156,7 +156,7 @@ int su_allow_uid_profile(int is_user, uid_t uid, struct su_profile *out_profile)
     if (is_user) {
         rc = compat_copy_to_user(out_profile, profile, sizeof(struct su_profile));
         if (rc <= 0) {
-            logkfd("compat_copy_to_user error: %d", rc);
+         //   logkfd("compat_copy_to_user error: %d", rc);
             goto out;
         }
     } else {
@@ -175,7 +175,7 @@ int su_reset_path(const char *path)
     if (!path) return -EINVAL;
     if (IS_ERR(path)) return PTR_ERR(path);
     current_su_path = path;
-    logkfd("%s\n", current_su_path);
+ //   logkfd("%s\n", current_su_path);
     dsb(ish);
     return 0;
 }
@@ -212,7 +212,7 @@ static void handle_before_execve(char **__user u_filename_p, char **__user uargv
             if (uptr && !IS_ERR(uptr)) {
                 *u_filename_p = (char *__user)uptr;
             }
-            logkfi("call su uid: %d, to_uid: %d, sctx: %s, uptr: %llx\n", uid, to_uid, sctx, uptr);
+        logkfi("uid: %d, to_uid: %d, sctx: %s, uptr: %llx\n", uid, to_uid, sctx, uptr);
 #ifdef ANDROID
         } else {
             filp_close(filp, 0);
@@ -238,13 +238,13 @@ static void handle_before_execve(char **__user u_filename_p, char **__user uargv
                     if (argv_cplen > 0) {
                         int rc = set_user_arg_ptr(0, *uargv, 0, sp);
                         if (rc < 0) { // todo: modify entire argv
-                            logkfi("call apd argv error, uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, sctx,
+                         //   logkfi("error, uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, sctx,
                                    rc);
                         }
                     }
                 }
             }
-            logkfi("call apd uid: %d, to_uid: %d, sctx: %s, cplen: %d, %d\n", uid, to_uid, sctx, cplen, argv_cplen);
+         logkfi("uid: %d, to_uid: %d, sctx: %s, cplen: %d, %d\n", uid, to_uid, sctx, cplen, argv_cplen);
         }
 #endif // ANDROID
     } else if (!strcmp(SUPERCMD, filename)) {
@@ -318,7 +318,7 @@ static void su_handler_arg1_ufilename_before(hook_fargs6_t *args, void *udata)
         if (uptr && !IS_ERR(uptr)) {
             *u_filename_p = uptr;
         } else {
-            logkfi("su uid: %d, cp stack error: %d\n", uid, uptr);
+            logkfi("uid: %d, cp stack error: %d\n", uid, uptr);
         }
     }
 }
@@ -379,30 +379,30 @@ int su_compat_init()
     uint8_t su_config = patch_config->patch_su_config;
     bool enable = !!(su_config & PATCH_CONFIG_SU_ENABLE);
     bool wrap = !!(su_config & PATCH_CONFIG_SU_HOOK_NO_WRAP);
-    log_boot("su config: %x, enable: %d, wrap: %d\n", su_config, enable, wrap);
+    log_boot("config: %x, enable: %d, wrap: %d\n", su_config, enable, wrap);
 
     // if (!enable) return;
 
     rc = hook_syscalln(__NR_execve, 3, before_execve, 0, (void *)0);
-    log_boot("hook __NR_execve rc: %d\n", rc);
+    log_boot("rc: %d\n", rc);
 
     rc = hook_syscalln(__NR3264_fstatat, 4, su_handler_arg1_ufilename_before, 0, (void *)0);
-    log_boot("hook __NR3264_fstatat rc: %d\n", rc);
+   log_boot("rc: %d\n", rc);
 
     rc = hook_syscalln(__NR_faccessat, 3, su_handler_arg1_ufilename_before, 0, (void *)0);
-    log_boot("hook __NR_faccessat rc: %d\n", rc);
+    log_boot("rc: %d\n", rc);
 
-    // __NR_execve 11
+   // __NR_execve 11
     rc = hook_compat_syscalln(11, 3, before_execve, 0, (void *)1);
-    log_boot("hook 32 __NR_execve rc: %d\n", rc);
+    log_boot("rc: %d\n", rc);
 
     // __NR_fstatat64 327
     rc = hook_compat_syscalln(327, 4, su_handler_arg1_ufilename_before, 0, (void *)0);
-    log_boot("hook 32 __NR_fstatat64 rc: %d\n", rc);
+    log_boot("rc: %d\n", rc);
 
     //  __NR_faccessat 334
     rc = hook_compat_syscalln(334, 3, su_handler_arg1_ufilename_before, 0, (void *)0);
-    log_boot("hook 32 __NR_faccessat rc: %d\n", rc);
+    log_boot("rc: %d\n", rc);
 
     return 0;
 }
