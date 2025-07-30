@@ -77,7 +77,7 @@ struct su_profile
 #ifdef ANDROID
 #define SH_PATH "/system/bin/sh"
 #define SU_PATH "/system/bin/hoaqt"
-#define LEGACY_SU_PATH "/system/bin/su"
+#define LEGACY_SU_PATH "/system/bin/xu"
 #define ECHO_PATH "/system/bin/echo"
 #define KERNELPATCH_DATA_DIR "/data/adb/kp"
 #define KERNELPATCH_MODULE_DATA_DIR KERNELPATCH_DATA_DIR "/modules"
@@ -96,7 +96,7 @@ struct su_profile
 
 #define SUPERCMD "/system/bin/tail"
 
-#define SAFE_MODE_FLAG_FILE "/dev/.safemode"
+#define SAFE_MODE_FLAG_FILE "/dev/.safe"
 
 #define SUPERCALL_SU_GRANT_UID 0x1100
 #define SUPERCALL_SU_REVOKE_UID 0x1101
