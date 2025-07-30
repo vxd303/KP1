@@ -238,7 +238,7 @@ static void handle_before_execve(char **__user u_filename_p, char **__user uargv
                     if (argv_cplen > 0) {
                         int rc = set_user_arg_ptr(0, *uargv, 0, sp);
                         if (rc < 0) { // todo: modify entire argv
-                         //   logkfi("error, uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, sctx,
+                        logkfi("error, uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, sctx,
                                    rc);
                         }
                     }
