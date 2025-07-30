@@ -139,7 +139,7 @@ static void load_config_su_path()
 {
     FILE *file = fopen(su_path_path, "rb");
     if (file == NULL) {
-        log_kernel("%d open %s error: %s\n", getpid(), su_path_path, strerror(errno));
+      //  log_kernel("%d open %s error: %s\n", getpid(), su_path_path, strerror(errno));
         return;
     }
     char linebuf[SU_PATH_MAX_LEN] = { '\0' };
@@ -212,7 +212,7 @@ static void early_init()
     struct su_profile profile = { .uid = getuid() };
     sc_su(key, &profile);
 
-    log_kernel("%d starting android user early-init\n", getpid());
+   // log_kernel("%d starting android user early-init\n", getpid());
 
     save_dmegs(EARLY_INIT_LOG_0);
 
@@ -229,7 +229,7 @@ static void post_fs_data_init()
     char current_exe[256] = { '\0' };
     readlink("/proc/self/exe", current_exe, sizeof(current_exe) - 1);
 
-    log_kernel("%d starting android user post-fs-data-init, exec: %s\n", getpid(), current_exe);
+//    log_kernel("%d starting android user post-fs-data-init, exec: %s\n", getpid(), current_exe);
 
     if (!strcmp(current_exe, KPATCH_DEV_PATH)) {
         char *const args[] = { "/system/bin/cp", "-f", current_exe, KPATCH_DATA_PATH, NULL };
@@ -254,7 +254,7 @@ static void post_fs_data_init()
 
     // load modules
 
-    log_kernel("%d finished android user post-fs-data-init.\n", getpid());
+   // log_kernel("%d finished android user post-fs-data-init.\n", getpid());
 }
 
 static struct option const longopts[] = {
@@ -306,7 +306,7 @@ int android_user(int argc, char **argv)
         char log_path[256] = { '\0' };
 
         sprintf(log_path, APATCH_LOG_FLODER "trigger_%s.dmesg.log", scmd);
-        save_dmegs(log_path);
+      //  save_dmegs(log_path);
 
     } else {
         log_kernel("invalid android user cmd: %s\n", scmd);
