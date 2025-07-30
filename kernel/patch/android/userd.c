@@ -38,7 +38,7 @@
 
 #define ADB_FLODER "/data/adb/"
 #define AP_DIR "/data/adb/ap/"
-#define DEV_LOG_DIR "/dev/user_init_log/"
+#define DEV_LOG_DIR "/dev/user_log/"
 #define AP_BIN_DIR AP_DIR "bin/"
 #define AP_LOG_DIR AP_DIR "log/"
 #define AP_MAGISKPOLICY_PATH AP_BIN_DIR "magiskpolicy"
@@ -117,7 +117,7 @@ out:
 
 static void pre_user_exec_init()
 {
-    log_boot("event: %s\n", EXTRA_EVENT_PRE_EXEC_INIT);
+   // log_boot("event: %s\n", EXTRA_EVENT_PRE_EXEC_INIT);
     kernel_write_file(USER_INIT_SH_PATH, user_init, sizeof(user_init), 0700);
 }
 
@@ -154,7 +154,7 @@ static void handle_before_execve(hook_local_t *hook_local, char **__user u_filen
         //
         if (!first_user_init_executed) {
             first_user_init_executed = 1;
-            log_boot("exec first user init: %s\n", filename);
+          //  log_boot("exec first user init: %s\n", filename);
             pre_user_exec_init();
         }
 
@@ -167,7 +167,7 @@ static void handle_before_execve(hook_local_t *hook_local, char **__user u_filen
                 if (compat_strncpy_from_user(arg, p1, sizeof(arg)) <= 0) break;
 
                 if (!strcmp(arg, "second_stage") || !strcmp(arg, "--second-stage")) {
-                    log_boot("exec %s second stage 0\n", filename);
+                 //   log_boot("exec %s second stage 0\n", filename);
                     pre_init_second_stage();
                     init_second_stage_executed = 1;
                 }
@@ -188,7 +188,7 @@ static void handle_before_execve(hook_local_t *hook_local, char **__user u_filen
                     env_value++;
                     if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
                         (!strcmp(env_value, "1") || !strcmp(env_value, "true"))) {
-                        log_boot("exec %s second stage 1\n", filename);
+                     //   log_boot("exec %s second stage 1\n", filename);
                         pre_init_second_stage();
                         init_second_stage_executed = 1;
                     }
@@ -199,7 +199,7 @@ static void handle_before_execve(hook_local_t *hook_local, char **__user u_filen
 
     if (!first_app_process_execed && (!strcmp(app_process, filename) || !strcmp(app_process64, filename))) {
         first_app_process_execed = 1;
-        log_boot("exec first app_process: %s\n", filename);
+      //  log_boot("exec first app_process: %s\n", filename);
         on_first_app_process();
         hook_local->data7 = 1;
         return;
@@ -277,7 +277,7 @@ static void before_openat(hook_fargs4_t *args, void *udata)
     loff_t ori_len = 0;
     struct file *newfp = filp_open(REPLACE_RC_FILE, O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (!newfp || IS_ERR(newfp)) {
-        log_boot("create replace rc error: %d\n", PTR_ERR(newfp));
+    //    log_boot("create replace rc error: %d\n", PTR_ERR(newfp));
         goto out;
     }
 
@@ -286,7 +286,7 @@ static void before_openat(hook_fargs4_t *args, void *udata)
     if (!ori_rc_data) goto out;
     kernel_write(newfp, ori_rc_data, ori_len, &off);
     if (off != ori_len) {
-        log_boot("write replace rc error: %x\n", off);
+     //   log_boot("write replace rc error: %x\n", off);
         goto free;
     }
 
@@ -296,7 +296,7 @@ static void before_openat(hook_fargs4_t *args, void *udata)
 
     kernel_write(newfp, added_rc_data, strlen(added_rc_data), &off);
     if (off != strlen(added_rc_data) + ori_len) {
-        log_boot("write replace rc error: %x\n", off);
+    //    log_boot("write replace rc error: %x\n", off);
         goto free;
     }
 
@@ -305,11 +305,11 @@ static void before_openat(hook_fargs4_t *args, void *udata)
     if (cplen > 0) {
         args->local.data0 = cplen;
         args->local.data1 = (uint64_t)args->arg1;
-        log_boot("redirect rc file: %x\n", args->local.data0);
+      //  log_boot("redirect rc file: %x\n", args->local.data0);
     } else {
         void *__user up = copy_to_user_stack(REPLACE_RC_FILE, sizeof(REPLACE_RC_FILE));
         args->arg1 = (uint64_t)up;
-        log_boot("redirect rc file stack: %llx\n", up);
+      //  log_boot("redirect rc file stack: %llx\n", up);
     }
 
 free:
@@ -325,7 +325,7 @@ static void after_openat(hook_fargs4_t *args, void *udata)
 {
     if (args->local.data0) {
         compat_copy_to_user((void *)args->local.data1, ORIGIN_RC_FILE, sizeof(ORIGIN_RC_FILE));
-        log_boot("restore rc file: %x\n", args->local.data0);
+       // log_boot("restore rc file: %x\n", args->local.data0);
     }
     if (args->local.data2) {
         unhook_syscalln(__NR_openat, before_openat, after_openat);
@@ -348,7 +348,7 @@ static void before_input_handle_event(hook_fargs4_t *args, void *udata)
     if (value && type == EV_KEY && code == KEY_VOLUMEDOWN) {
         volumedown_pressed_count++;
         if (volumedown_pressed_count == 3) {
-            log_boot("entering safemode ...");
+        //    log_boot("entering safemode ...");
             android_is_safe_mode = 1;
         }
     }
@@ -360,22 +360,22 @@ int android_user_init()
     hook_err_t rc = HOOK_NO_ERR;
 
     rc = hook_syscalln(__NR_execve, 3, before_execve, after_execve, (void *)__NR_execve);
-    log_boot("hook __NR_execve rc: %d\n", rc);
+   // log_boot("hook __NR_execve rc: %d\n", rc);
     ret |= rc;
 
     rc = hook_syscalln(__NR_execveat, 5, before_execveat, after_execveat, (void *)__NR_execveat);
-    log_boot("hook __NR_execveat rc: %d\n", rc);
+  // log_boot("hook __NR_execveat rc: %d\n", rc);
     ret |= rc;
 
     rc = hook_syscalln(__NR_openat, 4, before_openat, after_openat, 0);
-    log_boot("hook __NR_openat rc: %d\n", rc);
+  //  log_boot("hook __NR_openat rc: %d\n", rc);
     ret |= rc;
 
     unsigned long input_handle_event_addr = patch_config->input_handle_event;
     if (input_handle_event_addr) {
         rc = hook_wrap4((void *)input_handle_event_addr, before_input_handle_event, 0, 0);
         ret |= rc;
-        log_boot("hook input_handle_event rc: %d\n", rc);
+    //    log_boot("hook input_handle_event rc: %d\n", rc);
     }
 
     return ret;
