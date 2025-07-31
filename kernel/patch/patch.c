@@ -80,8 +80,8 @@ static void before_rest_init(hook_fargs4_t *args, void *udata)
     rc = kstorage_init();
     log_boot("kstorage_init done: %d\n", rc);
 
-    rc = su_compat_init();
-    log_boot("su_compat_init done: %d\n", rc);
+    //rc = su_compat_init();
+  //  log_boot("su_compat_init done: %d\n", rc);
 
     rc = resolve_pt_regs();
     log_boot("resolve_pt_regs done: %d\n", rc);
