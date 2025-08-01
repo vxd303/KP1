@@ -74,13 +74,13 @@ static void before_rest_init(hook_fargs4_t *args, void *udata)
     if ((rc = task_observer())) goto out;
     log_boot("task_observer done: %d\n", rc);
 
-    rc = supercall_install();
+  //  rc = supercall_install();
     log_boot("supercall_install done: %d\n", rc);
 
     rc = kstorage_init();
     log_boot("kstorage_init done: %d\n", rc);
 
-    //rc = su_compat_init();
+    rc = su_compat_init();
   //  log_boot("su_compat_init done: %d\n", rc);
 
     rc = resolve_pt_regs();
