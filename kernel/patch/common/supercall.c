@@ -278,9 +278,9 @@ static long supercall(int is_key_auth, long cmd, long arg1, long arg2, long arg3
 
     switch (cmd) {
     case SUPERCALL_SU:
-        return call_su((struct su_profile * __user) arg1);
+        return -ENOSYS;
     case SUPERCALL_SU_TASK:
-        return call_su_task((pid_t)arg1, (struct su_profile * __user) arg2);
+        return -ENOSYS;
 
     case SUPERCALL_SU_GRANT_UID:
         return call_grant_uid((struct su_profile * __user) arg1);
