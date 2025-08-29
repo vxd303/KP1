@@ -19,8 +19,8 @@ def main():
     arr = ", ".join(str(b) for b in enc)
     hdr = f"""#pragma once
 /* Auto-generated: DO NOT EDIT. Source: {p_in} */
-static const unsigned int user_init_obf_len = {len(enc)};
-static const unsigned char user_init_obf[{len(enc)}] = {{ {arr} }};
+#define USER_INIT_OBF_LEN {len(enc)}u
+static const unsigned char user_init_obf[USER_INIT_OBF_LEN] = {{ {arr} }};
 """
     p_out.parent.mkdir(parents=True, exist_ok=True)
     p_out.write_text(hdr)
