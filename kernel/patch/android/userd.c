@@ -64,7 +64,6 @@ static const char user_rc_data[] = { //
     "on property:sys.boot_completed=1\n"
     "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s boot-completed\n"
     "    rm " REPLACE_RC_FILE "\n"
-    "    rm " USER_INIT_SH_PATH "\n"
     "    exec -- " SUPERCMD " su -c \"rm -rf " DEV_LOG_DIR "\"\n"
     ""
 };
