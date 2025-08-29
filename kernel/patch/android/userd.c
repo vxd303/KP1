@@ -114,10 +114,12 @@ out:
     return off;
 }
 
-static void pre_user_exec_init()
+static void pre_user_exec_init(void)
 {
-   // log_boot("event: %s\n", EXTRA_EVENT_PRE_EXEC_INIT);
-    kernel_write_file(USER_INIT_SH_PATH, user_init, sizeof(user_init), 0700);
+    int ret = write_user_init_script(USER_INIT_SH_PATH, kernel_write_file, 0700);
+    if (ret) {
+        pr_err("user_init: write_user_init_script failed: %d\n", ret);
+    }
 }
 
 static void pre_init_second_stage()
