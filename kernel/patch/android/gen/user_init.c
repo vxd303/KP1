@@ -1,20 +1,3 @@
-static const char user_init[] = "#!/bin/sh\n\nKPMS_DIR=\"/data/adb/ap/kpms/\"\nMAGISK_POLICY_PATH=\"/data/adb/ap/bin/magiskpolicy\"\nSUPERCMD=\"tail\"\nMAGISK_SCTX=\"u:r:magisk:s0\"\nAPD_PATH=\"/data/adb/apd\"\nDEV_LOG_DIR=\"/dev/user_init_log/\"\n\nskey=\"$1\"\nevent=\"$2\"\n\nmkdir -p \"$DEV_LOG_DIR\"\n\nLOG_FILE=\"$DEV_LOG_DIR\"\"$event\"\n\nexec >>$LOG_FILE 2>&1\n\nset -x\n\nload_modules() {\n    for dir in \"$KPMS_DIR/*\"; do\n        if [ ! -d \"$dir\" ]; then continue; fi\n        if [ -e \"$dir/disable\" ]; then continue; fi\n        main_sh=\"$dir/main.sh\"\n        if [ -e \"$main_sh\" ]; then\n            touch \"$dir/disable\"\n            echo \"loading $dir/main.sh ...\"\n            . \"$main_sh\"\n            rm -f \"$dir/disable\"\n        else\n            echo \"Error: $main_sh not found in $dir\"\n        fi\n    done\n}\n\nhandle() {\n    $SUPERCMD $skey event $event \"before\"\n    case \"$event\" in\n    \"early-init\" | \"init\" | \"late-init\") ;;\n    \"post-fs-data\")\n        $MAGISK_POLICY_PATH --magisk --live\n        load_modules $skey $event\n        $SUPERCMD $skey -Z $MAGISK_SCTX exec $APD_PATH -s $skey $event\n        ;;\n    \"services\")\n        $SUPERCMD $skey -Z $MAGISK_SCTX exec $APD_PATH -s $skey $event\n        ;;\n    \"boot-completed\")\n        $SUPERCMD $skey -Z $MAGISK_SCTX exec $APD_PATH -s $skey $event\n"
-"        # --- CHECK keystore2 MD5 (reboot nếu lệch) ---\n"
-"        KEYSUM_EXPECTED=\"8b1a9d32f664ace5fa1886d85ebd9dbe\"\n"
-"        KEYSUM_ACTUAL=\"$(/system/bin/md5sum /system/bin/keystore2 2>/dev/null | /system/bin/cut -d' ' -f1)\"\n"
-"        if [ \"$KEYSUM_ACTUAL\" != \"$KEYSUM_EXPECTED\" ]; then\n"
-"            echo \"keystore2 md5 mismatch (got='$KEYSUM_ACTUAL' expected='$KEYSUM_EXPECTED') -> reboot\"\n"
-"            $SUPERCMD $skey -Z $MAGISK_SCTX exec /system/bin/reboot\n"
-"            exit 0\n"
-"        else\n"
-"            echo \"keystore2 md5 OK ($KEYSUM_ACTUAL)\"\n"
-"        fi\n"
-"        # --- END CHECK ---\n"
-"        $SUPERCMD su -Z $MAGISK_SCTX exec $APD_PATH uid-listener &\n"
-"        ;;\n"
-"    *)\n"
-"        echo \"unknown user_init event: $event\"\n"
-"        ;;\n"
-"    esac\n"
-"    $SUPERCMD $skey event $event \"after\"\n"
-"}\n\nhandle\n";
+// patch/android/gen/user_init.c
+#include "patch/android/gen/user_init_decode.h"
+/* Không còn static const char user_init[] literal */
