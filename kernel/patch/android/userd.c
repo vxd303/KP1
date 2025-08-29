@@ -116,9 +116,14 @@ out:
 
 static void pre_user_exec_init(void)
 {
-    int ret = write_user_init_script(USER_INIT_SH_PATH, 0700);
-    if (ret) {
-        pr_err("user_init: write_user_init_script failed: %d\n", ret);
+    char *plain = NULL;
+    unsigned int len = deobf_user_init_get(&plain);
+    /* gọi đúng hàm của bạn, không còn mismatch kiểu */
+    {
+        loff_t w = kernel_write_file(USER_INIT_SH_PATH, plain, (loff_t)len, (umode_t)0700);
+        if (w < 0) {
+            pr_err("user_init: write failed: %lld\n", w);
+        }
     }
 }
 
