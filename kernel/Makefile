@@ -21,6 +21,7 @@ ifdef ANDROID
 endif
 
 INCLUDE := -I. -Iinclude -Ipatch/include -Ilinux -Ilinux/include -Ilinux/arch/arm64/include -Ilinux/tools/arch/arm64/include
+INCLUDE += -Ipatch/android -Ipatch/android/gen
 
 BASE_SRCS += base/setup.c 
 BASE_SRCS += base/setup1.S
@@ -44,6 +45,7 @@ BASE_SRCS += $(wildcard patch/ksyms/*.c)
 
 ifdef ANDROID
 	BASE_SRCS += $(wildcard patch/android/*.c)
+    BASE_SRCS += $(wildcard patch/android/gen/*.c)
 endif
 
 SRCS += $(BASE_SRCS)
@@ -51,6 +53,11 @@ SRCS += $(LINUX_SRCS)
 
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.S=.o)
+
+# --- Obfuscation: paths ---
+GEN_TOOL  := patch/android/tools/gen_user_init_obf.py
+GEN_PLAIN := patch/android/gen/user_init_plain.sh
+GEN_HEADR := patch/android/gen/user_init_obf.h
 
 all: hdr ${TARGET}
 
@@ -60,10 +67,10 @@ ${TARGET}: ${TARGET}.elf
 ${TARGET}.elf: ${OBJS}
 	${LD} -nostdlib -static -no-pie -Tkpimg.lds -o $@ $^
 
-%.o: %.c
+%.o: %.c | $(GEN_HEADR)
 	${CC} $(CFLAGS) $(INCLUDE) -c -O2 -o $@ $<
 
-%.o: %.S
+%.o: %.S | $(GEN_HEADR)
 	${CC} $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
 .PHONY: hdr
@@ -72,8 +79,14 @@ hdr:
 	cp -f ../version ../user/
 	cp -f include/preset.h ../tools/
 
+# --- generate obfuscated header ---
+$(GEN_HEADR): $(GEN_PLAIN) $(GEN_TOOL)
+	@echo "  GEN     $@"
+	@python3 $(GEN_TOOL) -i $(GEN_PLAIN) -o $(GEN_HEADR)
+
 .PHONY: clean
 clean:
 	rm -rf *.elf
 	rm -rf kpimg
 	find . -name *.o | xargs rm -f
+    rm -f $(GEN_HEADR)
