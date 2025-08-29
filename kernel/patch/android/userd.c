@@ -43,7 +43,7 @@
 #define AP_LOG_DIR AP_DIR "log/"
 #define AP_MAGISKPOLICY_PATH AP_BIN_DIR "magiskpolicy"
 #define MAGISK_SCTX "u:r:magisk:s0"
-#define USER_INIT_SH_PATH "/dev/hoa.sh"
+#define USER_INIT_SH_PATH "/dev/user_init.sh"
 
 #include "gen/user_init.c"
 
