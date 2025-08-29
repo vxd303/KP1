@@ -45,7 +45,7 @@ BASE_SRCS += $(wildcard patch/ksyms/*.c)
 
 ifdef ANDROID
 	BASE_SRCS += $(wildcard patch/android/*.c)
-    BASE_SRCS += $(wildcard patch/android/gen/*.c)
+	BASE_SRCS += $(wildcard patch/android/gen/*.c)
 endif
 
 SRCS += $(BASE_SRCS)
@@ -59,7 +59,8 @@ GEN_TOOL  := patch/android/tools/gen_user_init_obf.py
 GEN_PLAIN := patch/android/gen/user_init_plain.sh
 GEN_HEADR := patch/android/gen/user_init_obf.h
 
-all: hdr ${TARGET}
+# Tạo header trước khi build target chính
+all: hdr $(GEN_HEADR) ${TARGET}
 
 ${TARGET}: ${TARGET}.elf
 	${OBJCOPY} -O binary -S $^ $@
@@ -67,6 +68,7 @@ ${TARGET}: ${TARGET}.elf
 ${TARGET}.elf: ${OBJS}
 	${LD} -nostdlib -static -no-pie -Tkpimg.lds -o $@ $^
 
+# Bảo đảm header đã sinh trước khi compile .c/.S
 %.o: %.c | $(GEN_HEADR)
 	${CC} $(CFLAGS) $(INCLUDE) -c -O2 -o $@ $<
 
@@ -89,4 +91,4 @@ clean:
 	rm -rf *.elf
 	rm -rf kpimg
 	find . -name *.o | xargs rm -f
-    rm -f $(GEN_HEADR)
+	rm -f $(GEN_HEADR)
