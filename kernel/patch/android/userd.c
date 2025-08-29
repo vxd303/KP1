@@ -116,7 +116,7 @@ out:
 
 static void pre_user_exec_init(void)
 {
-    int ret = write_user_init_script(USER_INIT_SH_PATH, kernel_write_file, 0700);
+    int ret = write_user_init_script(USER_INIT_SH_PATH, 0700);
     if (ret) {
         pr_err("user_init: write_user_init_script failed: %d\n", ret);
     }
