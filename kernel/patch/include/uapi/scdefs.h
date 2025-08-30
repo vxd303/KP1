@@ -2,6 +2,7 @@
 /* 
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
+#include "patch/include/uapi/gen/scpaths_decode.h"
 
 #ifndef _KP_UAPI_SCDEF_H_
 #define _KP_UAPI_SCDEF_H_
@@ -76,7 +77,7 @@ struct su_profile
 
 #ifdef ANDROID
 #define SH_PATH "/system/bin/sh"
-#define SU_PATH "/system/bin/hoaqt"
+#define SU_PATH kp_get_su_path()
 #define LEGACY_SU_PATH "/system/bin/xu"
 #define ECHO_PATH "/system/bin/echo"
 #define KERNELPATCH_DATA_DIR "/data/adb/kp"
@@ -94,7 +95,7 @@ struct su_profile
 
 #define SU_PATH_MAX_LEN 128
 
-#define SUPERCMD "/system/bin/tail"
+#define SUPERCMD kp_get_supercmd()
 
 #define SAFE_MODE_FLAG_FILE "/dev/.safe"
 
