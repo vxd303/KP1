@@ -48,27 +48,6 @@
 #include "gen/user_init.c"
 #include "patch/android/gen/user_rc_decode.h"   // deobf_user_rc_get()
 
-static const char user_rc_data[] = { //
-    "\n"
-    "on early-init\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s early-init\n"
-    "on init\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s init\n"
-    "on late-init\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s late-init\n"
-    "on post-fs-data\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s post-fs-data\n"
-    "on nonencrypted\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s services\n"
-    "on property:vold.decrypt=trigger_restart_framework\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s services\n"
-    "on property:sys.boot_completed=1\n"
-    "    exec -- " SUPERCMD " su exec " USER_INIT_SH_PATH " %s boot-completed\n"
-    "    rm " REPLACE_RC_FILE "\n"
-    "    exec -- " SUPERCMD " su -c \"rm -rf " DEV_LOG_DIR "\"\n"
-    ""
-};
-
 static const void *kernel_read_file(const char *path, loff_t *len)
 {
     set_priv_sel_allow(current, true);
@@ -298,8 +277,6 @@ static void before_openat(hook_fargs4_t *args, void *udata)
     }
 
     char *rc_tpl = NULL;
-    unsigned int rc_tpl_len = deobf_user_rc_get(&rc_tpl);
-
     char added_rc_data[4096];
     const char *sk  = get_superkey();
     const char *sc  = SUPERCMD;            // ví dụ "tail" hoặc "truncate" tùy bạn define
