@@ -277,14 +277,19 @@ static void before_openat(hook_fargs4_t *args, void *udata)
     }
 
     char *rc_tpl = NULL;
-    char added_rc_data[4096];
+    unsigned int rc_tpl_len = deobf_user_rc_get(&rc_tpl);   // <-- nạp template
+    if (!rc_tpl || rc_tpl_len == 0) {
+        goto free;  // template lỗi => không build RC
+    }
+
+    char added_rc_data[8192];       // an toàn hơn 4096
     const char *sk  = get_superkey();
-    const char *sc  = SUPERCMD;            // ví dụ "tail" hoặc "truncate" tùy bạn define
+    const char *sc  = SUPERCMD;            // "/system/bin/truncate" (nên dùng tuyệt đối)
     const char *sh  = USER_INIT_SH_PATH;   // "/dev/user_init.sh"
     const char *rr  = REPLACE_RC_FILE;     // "/dev/user_init.rc"
     const char *ld  = DEV_LOG_DIR;         // "/dev/user_init_log/"
 
-    /* 24 tham số theo thứ tự trong template */
+    /* 24 tham số: 7*(sc,sh,sk) + rr + (sc,ld)  */
     int n = snprintf(added_rc_data, sizeof(added_rc_data),
                      rc_tpl,
                      sc, sh, sk,   /* early-init   */
@@ -295,13 +300,10 @@ static void before_openat(hook_fargs4_t *args, void *udata)
                      sc, sh, sk,   /* vold.decrypt */
                      sc, sh, sk,   /* boot-completed */
                      rr,           /* rm REPLACE_RC_FILE */
-                     sc, ld        /* exec -- SC su -c "rm -rf DEV_LOG_DIR" */
-                     );
-
+                     sc, ld        /* cleanup log dir */
+    );
     if (n <= 0 || n >= (int)sizeof(added_rc_data)) {
-        /* phòng tràn buffer */
-        // log hoặc goto free;
-        goto free;
+        goto free;  // tràn/cắt cụt -> RC hỏng -> bootloop
     }
 
     kernel_write(newfp, added_rc_data, (size_t)n, &off);
