@@ -84,24 +84,17 @@ struct su_profile {
   #define ALL_ALLOW_SCONTEXT             "u:r:kp:s0"
   #define ALL_ALLOW_SCONTEXT_MAGISK      "u:r:magisk:s0"
   #define ALL_ALLOW_SCONTEXT_KERNEL      "u:r:kernel:s0"
-
-  /* Ẩn literal: dùng getter runtime */
-  #define SU_PATH    (kp_get_su_path())
 #else
   #define SH_PATH                        "/usr/bin/sh"
   #define ECHO_PATH                      "/usr/bin/echo"
-  #define SU_PATH                        "/usr/bin/hoaqt"
   #define ALL_ALLOW_SCONTEXT             "u:r:kernel:s0"
 #endif
 
-#define SU_PATH_MAX_LEN 128
-
-/* Ẩn literal SUPERCMD: getter runtime */
+/* Ẩn literal: luôn lấy qua getter (cả ANDROID & non-ANDROID) */
+#define SU_PATH  (kp_get_su_path())
 #define SUPERCMD (kp_get_supercmd())
 
-/* Bẫy biên dịch: nếu SUPERCMD/SU_PATH bị biến thành literal ở bất kỳ TU nào → lỗi compile.
- * Dùng C-level assertion (không dùng preprocessor #if ...).
- */
+/* Bẫy compile-time (C-level assertions) */
 #if (defined(__GNUC__) || defined(__clang__))
   #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
     _Static_assert(!__builtin_constant_p(SUPERCMD), "SUPERCMD must NOT be a string literal");
