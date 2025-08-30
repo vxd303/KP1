@@ -40,7 +40,7 @@
 #include <kstorage.h>
 
 const char sh_path[] = SH_PATH;
-const char default_su_path[] = SU_PATH;
+static inline const char *default_su_path(void) { return SU_PATH; }
 
 #ifdef ANDROID
 const char legacy_su_path[] = LEGACY_SU_PATH;
@@ -357,7 +357,7 @@ KP_EXPORT_SYMBOL(list_ap_mod_exclude);
 
 int su_compat_init()
 {
-    current_su_path = default_su_path;
+    current_su_path = default_su_path();
 
     su_kstorage_gid = try_alloc_kstroage_group();
     if (su_kstorage_gid != KSTORAGE_SU_LIST_GROUP) return -ENOMEM;
