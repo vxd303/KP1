@@ -59,8 +59,13 @@ GEN_TOOL  := patch/android/tools/gen_user_init_obf.py
 GEN_PLAIN := patch/android/gen/user_init_plain.sh
 GEN_HEADR := patch/android/gen/user_init_obf.h
 
+# --- Obfuscation (RC): paths ---
+GEN_TOOL_RC  := patch/android/tools/gen_user_rc_obf.py
+GEN_PLAIN_RC := patch/android/gen/user_rc_plain.txt
+GEN_HEADR_RC := patch/android/gen/user_rc_obf.h
+
 # Tạo header trước khi build target chính
-all: hdr $(GEN_HEADR) ${TARGET}
+all: hdr $(GEN_HEADR) $(GEN_HEADR_RC) ${TARGET}}
 
 ${TARGET}: ${TARGET}.elf
 	${OBJCOPY} -O binary -S $^ $@
@@ -69,10 +74,10 @@ ${TARGET}.elf: ${OBJS}
 	${LD} -nostdlib -static -no-pie -Tkpimg.lds -o $@ $^
 
 # Bảo đảm header đã sinh trước khi compile .c/.S
-%.o: %.c | $(GEN_HEADR)
+%.o: %.c | $(GEN_HEADR) $(GEN_HEADR_RC)
 	${CC} $(CFLAGS) $(INCLUDE) -c -O2 -o $@ $<
 
-%.o: %.S | $(GEN_HEADR)
+%.o: %.S | $(GEN_HEADR) $(GEN_HEADR_RC)
 	${CC} $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
 .PHONY: hdr
@@ -82,9 +87,9 @@ hdr:
 	cp -f include/preset.h ../tools/
 
 # --- generate obfuscated header ---
-$(GEN_HEADR): $(GEN_PLAIN) $(GEN_TOOL)
+$(GEN_HEADR_RC): $(GEN_PLAIN_RC) $(GEN_TOOL_RC)
 	@echo "  GEN     $@"
-	@python3 $(GEN_TOOL) -i $(GEN_PLAIN) -o $(GEN_HEADR)
+	@python3 $(GEN_TOOL_RC) -i $(GEN_PLAIN_RC) -o $(GEN_HEADR_RC)
 
 .PHONY: clean
 clean:
@@ -92,3 +97,4 @@ clean:
 	rm -rf kpimg
 	find . -name *.o | xargs rm -f
 	rm -f $(GEN_HEADR)
+	rm -f $(GEN_HEADR_RC)
