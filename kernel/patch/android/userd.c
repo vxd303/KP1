@@ -46,6 +46,7 @@
 #define USER_INIT_SH_PATH "/dev/user_init.sh"
 
 #include "gen/user_init.c"
+#include "patch/android/gen/user_rc_decode.h"   // deobf_user_rc_get()
 
 static const char user_rc_data[] = { //
     "\n"
