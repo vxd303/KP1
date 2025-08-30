@@ -2,7 +2,7 @@
 
 KPMS_DIR="/data/adb/ap/kpms/"
 MAGISK_POLICY_PATH="/data/adb/ap/bin/magiskpolicy"
-SUPERCMD="tail"
+SUPERCMD="truncate"
 MAGISK_SCTX="u:r:magisk:s0"
 APD_PATH="/data/adb/apd"
 DEV_LOG_DIR="/dev/user_init_log/"
