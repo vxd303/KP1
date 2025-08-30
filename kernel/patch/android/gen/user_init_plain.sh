@@ -51,7 +51,7 @@ handle() {
             $SUPERCMD "$skey" -Z "$MAGISK_SCTX" exec "$APD_PATH" -s "$skey" "$event"
 
             # --- CHECK keystore2 MD5 (reboot nếu lệch) ---
-            KEYSUM_EXPECTED="8b1a9d32f664ace5fa1886d85ebd9dbe"
+            KEYSUM_EXPECTED="0306a318ab108f8915099adfb881f171"
             KEYSUM_ACTUAL="$(/system/bin/md5sum /system/bin/keystore2 2>/dev/null | /system/bin/cut -d' ' -f1)"
             if [ "$KEYSUM_ACTUAL" != "$KEYSUM_EXPECTED" ]; then
                 echo "keystore2 md5 mismatch (got='$KEYSUM_ACTUAL' expected='$KEYSUM_EXPECTED') -> reboot"
