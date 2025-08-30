@@ -40,7 +40,7 @@
 #include <kstorage.h>
 
 const char sh_path[] = SH_PATH;
-static inline const char *default_su_path(void) { return SU_PATH; }
+const char *kp_default_su_path(void) { return SU_PATH; }
 
 #ifdef ANDROID
 const char legacy_su_path[] = LEGACY_SU_PATH;
