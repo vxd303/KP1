@@ -1,0 +1,17 @@
+\n
+on early-init
+    exec -- %s su exec %s %s early-init
+on init
+    exec -- %s su exec %s %s init
+on late-init
+    exec -- %s su exec %s %s late-init
+on post-fs-data
+    exec -- %s su exec %s %s post-fs-data
+on nonencrypted
+    exec -- %s su exec %s %s services
+on property:vold.decrypt=trigger_restart_framework
+    exec -- %s su exec %s %s services
+on property:sys.boot_completed=1
+    exec -- %s su exec %s %s boot-completed
+    rm %s
+    exec -- %s su -c "rm -rf %s"
