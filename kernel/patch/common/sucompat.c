@@ -357,7 +357,7 @@ KP_EXPORT_SYMBOL(list_ap_mod_exclude);
 
 int su_compat_init()
 {
-    current_su_path = default_su_path();
+    current_su_path = default_su_path;
 
     su_kstorage_gid = try_alloc_kstroage_group();
     if (su_kstorage_gid != KSTORAGE_SU_LIST_GROUP) return -ENOMEM;
