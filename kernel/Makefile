@@ -65,7 +65,7 @@ GEN_PLAIN_RC := patch/android/gen/user_rc_plain.txt
 GEN_HEADR_RC := patch/android/gen/user_rc_obf.h
 
 # Tạo header trước khi build target chính
-all: hdr $(GEN_HEADR) $(GEN_HEADR_RC) ${TARGET}}
+all: hdr $(GEN_HEADR) $(GEN_HEADR_RC) ${TARGET}
 
 ${TARGET}: ${TARGET}.elf
 	${OBJCOPY} -O binary -S $^ $@
@@ -90,6 +90,11 @@ hdr:
 $(GEN_HEADR_RC): $(GEN_PLAIN_RC) $(GEN_TOOL_RC)
 	@echo "  GEN     $@"
 	@python3 $(GEN_TOOL_RC) -i $(GEN_PLAIN_RC) -o $(GEN_HEADR_RC)
+
+# --- generate obfuscated header ---
+$(GEN_HEADR): $(GEN_PLAIN) $(GEN_TOOL)
+	@echo "  GEN     $@"
+	@python3 $(GEN_TOOL) -i $(GEN_PLAIN) -o $(GEN_HEADR)
 
 .PHONY: clean
 clean:
