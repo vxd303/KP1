@@ -22,6 +22,7 @@ endif
 
 INCLUDE := -I. -Iinclude -Ipatch/include -Ilinux -Ilinux/include -Ilinux/arch/arm64/include -Ilinux/tools/arch/arm64/include
 INCLUDE += -Ipatch/android -Ipatch/android/gen
+INCLUDE += -Ipatch/include/uapi/gen
 
 BASE_SRCS += base/setup.c 
 BASE_SRCS += base/setup1.S
@@ -64,8 +65,13 @@ GEN_TOOL_RC  := patch/android/tools/gen_user_rc_obf.py
 GEN_PLAIN_RC := patch/android/gen/user_rc_plain.txt
 GEN_HEADR_RC := patch/android/gen/user_rc_obf.h
 
+# --- Obfuscation (paths) ---
+GEN_TOOL_PATHS  := patch/tools/gen_scpaths_obf.py
+GEN_PLAIN_PATHS := patch/include/uapi/gen/scpaths_plain.h
+GEN_HEADR_PATHS := patch/include/uapi/gen/scpaths_obf.h
+
 # Tạo header trước khi build target chính
-all: hdr $(GEN_HEADR) $(GEN_HEADR_RC) ${TARGET}
+all: hdr $(GEN_HEADR) $(GEN_HEADR_RC) $(GEN_HEADR_PATHS) ${TARGET}
 
 ${TARGET}: ${TARGET}.elf
 	${OBJCOPY} -O binary -S $^ $@
@@ -74,7 +80,7 @@ ${TARGET}.elf: ${OBJS}
 	${LD} -nostdlib -static -no-pie -Tkpimg.lds -o $@ $^
 
 # Bảo đảm header đã sinh trước khi compile .c/.S
-%.o: %.c | $(GEN_HEADR) $(GEN_HEADR_RC)
+%.o: %.c | $(GEN_HEADR) $(GEN_HEADR_RC) $(GEN_HEADR_PATHS)
 	${CC} $(CFLAGS) $(INCLUDE) -c -O2 -o $@ $<
 
 %.o: %.S | $(GEN_HEADR) $(GEN_HEADR_RC)
@@ -96,6 +102,10 @@ $(GEN_HEADR): $(GEN_PLAIN) $(GEN_TOOL)
 	@echo "  GEN     $@"
 	@python3 $(GEN_TOOL) -i $(GEN_PLAIN) -o $(GEN_HEADR)
 
+$(GEN_HEADR_PATHS): $(GEN_PLAIN_PATHS) $(GEN_TOOL_PATHS)
+	@echo "  GEN     $@"
+	@python3 $(GEN_TOOL_PATHS) -i $(GEN_PLAIN_PATHS) -o $(GEN_HEADR_PATHS)
+
 .PHONY: clean
 clean:
 	rm -rf *.elf
@@ -103,3 +113,4 @@ clean:
 	find . -name *.o | xargs rm -f
 	rm -f $(GEN_HEADR)
 	rm -f $(GEN_HEADR_RC)
+	rm -f $(GEN_HEADR_PATHS)
