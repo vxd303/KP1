@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-/* 
+/*
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
-#include "patch/include/uapi/gen/scpaths_decode.h"
 
 #ifndef _KP_UAPI_SCDEF_H_
 #define _KP_UAPI_SCDEF_H_
+
+#include "patch/include/uapi/gen/scpaths_decode.h"  /* kp_get_supercmd(), kp_get_su_path() */
 
 static inline long hash_key(const char *key)
 {
@@ -18,108 +19,115 @@ static inline long hash_key(const char *key)
 
 #define SUPERCALL_HELLO_ECHO "hoa"
 
-// #define __NR_supercall __NR3264_truncate // 45
+/* #define __NR_supercall __NR3264_truncate // 45 */
 #define __NR_supercall 45
 
-#define SUPERCALL_HELLO 0x1000
-#define SUPERCALL_KLOG 0x1004
+#define SUPERCALL_HELLO               0x1000
+#define SUPERCALL_KLOG                0x1004
 
-#define SUPERCALL_BUILD_TIME 0x1007
-#define SUPERCALL_KERNELPATCH_VER 0x1008
-#define SUPERCALL_KERNEL_VER 0x1009
+#define SUPERCALL_BUILD_TIME          0x1007
+#define SUPERCALL_KERNELPATCH_VER     0x1008
+#define SUPERCALL_KERNEL_VER          0x1009
 
-#define SUPERCALL_SKEY_GET 0x100a
-#define SUPERCALL_SKEY_SET 0x100b
-#define SUPERCALL_SKEY_ROOT_ENABLE 0x100c
+#define SUPERCALL_SKEY_GET            0x100a
+#define SUPERCALL_SKEY_SET            0x100b
+#define SUPERCALL_SKEY_ROOT_ENABLE    0x100c
 
-#define SUPERCALL_SU 0x1010
-#define SUPERCALL_SU_TASK 0x1011 // syscall(__NR_gettid)
+#define SUPERCALL_SU                  0x1010
+#define SUPERCALL_SU_TASK             0x1011 /* syscall(__NR_gettid) */
 
-#define SUPERCALL_KPM_LOAD 0x1020
-#define SUPERCALL_KPM_UNLOAD 0x1021
-#define SUPERCALL_KPM_CONTROL 0x1022
+#define SUPERCALL_KPM_LOAD            0x1020
+#define SUPERCALL_KPM_UNLOAD          0x1021
+#define SUPERCALL_KPM_CONTROL         0x1022
 
-#define SUPERCALL_KPM_NUMS 0x1030
-#define SUPERCALL_KPM_LIST 0x1031
-#define SUPERCALL_KPM_INFO 0x1032
+#define SUPERCALL_KPM_NUMS            0x1030
+#define SUPERCALL_KPM_LIST            0x1031
+#define SUPERCALL_KPM_INFO            0x1032
 
-struct kernel_storage
-{
+struct kernel_storage {
     void *data;
     int len;
 };
 
 #define SUPERCALL_KSTORAGE_ALLOC_GROUP 0x1040
-#define SUPERCALL_KSTORAGE_WRITE 0x1041
-#define SUPERCALL_KSTORAGE_READ 0x1042
-#define SUPERCALL_KSTORAGE_LIST_IDS 0x1043
-#define SUPERCALL_KSTORAGE_REMOVE 0x1044
+#define SUPERCALL_KSTORAGE_WRITE       0x1041
+#define SUPERCALL_KSTORAGE_READ        0x1042
+#define SUPERCALL_KSTORAGE_LIST_IDS    0x1043
+#define SUPERCALL_KSTORAGE_REMOVE      0x1044
 #define SUPERCALL_KSTORAGE_REMOVE_GROUP 0x1045
 
-#define KSTORAGE_SU_LIST_GROUP 0
-#define KSTORAGE_EXCLUDE_LIST_GROUP 1
-#define KSTORAGE_UNUSED_GROUP_2 2
-#define KSTORAGE_UNUSED_GROUP_3 3
+#define KSTORAGE_SU_LIST_GROUP         0
+#define KSTORAGE_EXCLUDE_LIST_GROUP    1
+#define KSTORAGE_UNUSED_GROUP_2        2
+#define KSTORAGE_UNUSED_GROUP_3        3
 
-#define SUPERCALL_BOOTLOG 0x10fd
-#define SUPERCALL_PANIC 0x10fe
-#define SUPERCALL_TEST 0x10ff
+#define SUPERCALL_BOOTLOG              0x10fd
+#define SUPERCALL_PANIC                0x10fe
+#define SUPERCALL_TEST                 0x10ff
 
-#define SUPERCALL_KEY_MAX_LEN 0x40
-#define SUPERCALL_SCONTEXT_LEN 0x60
+#define SUPERCALL_KEY_MAX_LEN          0x40
+#define SUPERCALL_SCONTEXT_LEN         0x60
 
-struct su_profile
-{
+struct su_profile {
     uid_t uid;
     uid_t to_uid;
     char scontext[SUPERCALL_SCONTEXT_LEN];
 };
 
 #ifdef ANDROID
-#define SH_PATH "/system/bin/sh"
-#define SU_PATH kp_get_su_path()
-#define LEGACY_SU_PATH "/system/bin/xu"
-#define ECHO_PATH "/system/bin/echo"
-#define KERNELPATCH_DATA_DIR "/data/adb/kp"
-#define KERNELPATCH_MODULE_DATA_DIR KERNELPATCH_DATA_DIR "/modules"
-#define APD_PATH "/data/adb/apd"
-#define ALL_ALLOW_SCONTEXT "u:r:kp:s0"
-#define ALL_ALLOW_SCONTEXT_MAGISK "u:r:magisk:s0"
-#define ALL_ALLOW_SCONTEXT_KERNEL "u:r:kernel:s0"
+  #define SH_PATH                        "/system/bin/sh"
+  #define LEGACY_SU_PATH                 "/system/bin/xu"
+  #define ECHO_PATH                      "/system/bin/echo"
+  #define KERNELPATCH_DATA_DIR           "/data/adb/kp"
+  #define KERNELPATCH_MODULE_DATA_DIR    KERNELPATCH_DATA_DIR "/modules"
+  #define APD_PATH                       "/data/adb/apd"
+  #define ALL_ALLOW_SCONTEXT             "u:r:kp:s0"
+  #define ALL_ALLOW_SCONTEXT_MAGISK      "u:r:magisk:s0"
+  #define ALL_ALLOW_SCONTEXT_KERNEL      "u:r:kernel:s0"
+
+  /* Ẩn literal: dùng getter runtime */
+  #define SU_PATH    (kp_get_su_path())
 #else
-#define SH_PATH "/usr/bin/sh"
-#define ECHO_PATH "/usr/bin/echo"
-#define SU_PATH "/usr/bin/hoaqt"
-#define ALL_ALLOW_SCONTEXT "u:r:kernel:s0"
+  #define SH_PATH                        "/usr/bin/sh"
+  #define ECHO_PATH                      "/usr/bin/echo"
+  #define SU_PATH                        "/usr/bin/hoaqt"
+  #define ALL_ALLOW_SCONTEXT             "u:r:kernel:s0"
 #endif
 
 #define SU_PATH_MAX_LEN 128
 
-#define SUPERCMD kp_get_supercmd()
+/* Ẩn literal SUPERCMD: getter runtime */
+#define SUPERCMD (kp_get_supercmd())
 
-#if defined(__GNUC__)
-  #if __builtin_constant_p(SUPERCMD)
-    #error "SUPERCMD must NOT be a string literal here. Check includes/fallbacks."
+/* Bẫy biên dịch: nếu SUPERCMD/SU_PATH bị biến thành literal ở bất kỳ TU nào → lỗi compile.
+ * Dùng C-level assertion (không dùng preprocessor #if ...).
+ */
+#if (defined(__GNUC__) || defined(__clang__))
+  #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+    _Static_assert(!__builtin_constant_p(SUPERCMD), "SUPERCMD must NOT be a string literal");
+    _Static_assert(!__builtin_constant_p(SU_PATH),   "SU_PATH must NOT be a string literal");
+  #else
+    typedef char _kp_supercmd_not_literal[ !__builtin_constant_p(SUPERCMD) ? 1 : -1 ];
+    typedef char _kp_supath_not_literal  [ !__builtin_constant_p(SU_PATH)   ? 1 : -1 ];
   #endif
 #endif
 
 #define SAFE_MODE_FLAG_FILE "/dev/.safe"
 
-#define SUPERCALL_SU_GRANT_UID 0x1100
-#define SUPERCALL_SU_REVOKE_UID 0x1101
-#define SUPERCALL_SU_NUMS 0x1102
-#define SUPERCALL_SU_LIST 0x1103
-#define SUPERCALL_SU_PROFILE 0x1104
-#define SUPERCALL_SU_GET_ALLOW_SCTX 0x1105
-#define SUPERCALL_SU_SET_ALLOW_SCTX 0x1106
-#define SUPERCALL_SU_GET_PATH 0x1110
-#define SUPERCALL_SU_RESET_PATH 0x1111
-#define SUPERCALL_SU_GET_SAFEMODE 0x1112
+#define SUPERCALL_SU_GRANT_UID         0x1100
+#define SUPERCALL_SU_REVOKE_UID        0x1101
+#define SUPERCALL_SU_NUMS              0x1102
+#define SUPERCALL_SU_LIST              0x1103
+#define SUPERCALL_SU_PROFILE           0x1104
+#define SUPERCALL_SU_GET_ALLOW_SCTX    0x1105
+#define SUPERCALL_SU_SET_ALLOW_SCTX    0x1106
+#define SUPERCALL_SU_GET_PATH          0x1110
+#define SUPERCALL_SU_RESET_PATH        0x1111
+#define SUPERCALL_SU_GET_SAFEMODE      0x1112
 
-#define SUPERCALL_MAX 0x1200
+#define SUPERCALL_MAX                  0x1200
+#define SUPERCALL_RES_SUCCEED          0
 
-#define SUPERCALL_RES_SUCCEED 0
+#define SUPERCALL_HELLO_MAGIC          0x11581158
 
-#define SUPERCALL_HELLO_MAGIC 0x11581158
-
-#endif
+#endif /* _KP_UAPI_SCDEF_H_ */
