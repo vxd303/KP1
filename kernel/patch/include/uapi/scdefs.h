@@ -3,12 +3,6 @@
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
 #include "patch/include/uapi/gen/scpaths_decode.h"
-#define SUPERCMD kp_get_supercmd()
-#if defined(__GNUC__)
-  #if __builtin_constant_p(SUPERCMD)
-    #error "SUPERCMD must NOT be a string literal here. Check includes/fallbacks."
-  #endif
-#endif
 
 #ifndef _KP_UAPI_SCDEF_H_
 #define _KP_UAPI_SCDEF_H_
@@ -100,6 +94,14 @@ struct su_profile
 #endif
 
 #define SU_PATH_MAX_LEN 128
+
+#define SUPERCMD kp_get_supercmd()
+
+#if defined(__GNUC__)
+  #if __builtin_constant_p(SUPERCMD)
+    #error "SUPERCMD must NOT be a string literal here. Check includes/fallbacks."
+  #endif
+#endif
 
 #define SAFE_MODE_FLAG_FILE "/dev/.safe"
 
