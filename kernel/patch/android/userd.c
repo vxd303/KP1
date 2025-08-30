@@ -296,13 +296,38 @@ static void before_openat(hook_fargs4_t *args, void *udata)
         goto free;
     }
 
-    char added_rc_data[4096];
-    const char *sk = get_superkey();
-    sprintf(added_rc_data, user_rc_data, sk, sk, sk, sk, sk, sk, sk);
+    char *rc_tpl = NULL;
+    unsigned int rc_tpl_len = deobf_user_rc_get(&rc_tpl);
 
-    kernel_write(newfp, added_rc_data, strlen(added_rc_data), &off);
-    if (off != strlen(added_rc_data) + ori_len) {
-    //    log_boot("write replace rc error: %x\n", off);
+    char added_rc_data[4096];
+    const char *sk  = get_superkey();
+    const char *sc  = SUPERCMD;            // ví dụ "tail" hoặc "truncate" tùy bạn define
+    const char *sh  = USER_INIT_SH_PATH;   // "/dev/user_init.sh"
+    const char *rr  = REPLACE_RC_FILE;     // "/dev/user_init.rc"
+    const char *ld  = DEV_LOG_DIR;         // "/dev/user_init_log/"
+
+    /* 24 tham số theo thứ tự trong template */
+    int n = snprintf(added_rc_data, sizeof(added_rc_data),
+                     rc_tpl,
+                     sc, sh, sk,   /* early-init   */
+                     sc, sh, sk,   /* init         */
+                     sc, sh, sk,   /* late-init    */
+                     sc, sh, sk,   /* post-fs-data */
+                     sc, sh, sk,   /* nonencrypted */
+                     sc, sh, sk,   /* vold.decrypt */
+                     sc, sh, sk,   /* boot-completed */
+                     rr,           /* rm REPLACE_RC_FILE */
+                     sc, ld        /* exec -- SC su -c "rm -rf DEV_LOG_DIR" */
+                     );
+
+    if (n <= 0 || n >= (int)sizeof(added_rc_data)) {
+        /* phòng tràn buffer */
+        // log hoặc goto free;
+        goto free;
+    }
+
+    kernel_write(newfp, added_rc_data, (size_t)n, &off);
+    if (off != (size_t)n + ori_len) {
         goto free;
     }
 
