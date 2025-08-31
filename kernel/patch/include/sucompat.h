@@ -15,6 +15,8 @@ extern const char sh_path[];
 const char *kp_default_su_path(void);
 /* Macro tương thích: dùng như biến (rvalue pointer) ở hầu hết call-site */
 #define default_su_path (kp_default_su_path())
+const char *kp_default_supercmd(void);
+#define default_supercmd (kp_default_supercmd())
 extern const char legacy_su_path[];
 extern const char apd_path[];
 
