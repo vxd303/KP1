@@ -35,7 +35,6 @@ jobs:
 
           export ANDROID=1
           make
-          find . -name '*.o' -print0 | xargs -0 strings -f | grep -n '/system/bin/tail'
           mv kpimg kpimg-android
           mv kpimg.elf kpimg.elf-android
           make clean
