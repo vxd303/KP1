@@ -47,6 +47,8 @@
 
 #include "gen/user_init.c"
 #include "patch/android/gen/user_rc_decode.h"   // deobf_user_rc_get()
+static inline const char *kp_supercmd(void) { return SUPERCMD; }
+
 
 static const void *kernel_read_file(const char *path, loff_t *len)
 {
@@ -284,7 +286,7 @@ static void before_openat(hook_fargs4_t *args, void *udata)
 
     char added_rc_data[8192];       // an toàn hơn 4096
     const char *sk  = get_superkey();
-    const char *sc  = SUPERCMD;            // "/system/bin/truncate" (nên dùng tuyệt đối)
+    const char *sc  = kp_supercmd();            // "/system/bin/truncate" (nên dùng tuyệt đối)
     const char *sh  = USER_INIT_SH_PATH;   // "/dev/user_init.sh"
     const char *rr  = REPLACE_RC_FILE;     // "/dev/user_init.rc"
     const char *ld  = DEV_LOG_DIR;         // "/dev/user_init_log/"
