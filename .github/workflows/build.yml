@@ -36,6 +36,10 @@ jobs:
           export ANDROID=1
           make
           find . -name '*.o' -print0 | xargs -0 strings -f | grep -n '/system/bin/tail'
+          cp patch/common/sucompat.o /tmp/sucompat.o
+          ${TARGET_COMPILE}objcopy --strip-debug /tmp/sucompat.o /tmp/sucompat.nodbg.o
+          strings -td /tmp/sucompat.nodbg.o | grep '/system/bin/tail' \
+          && echo "Có trong .rodata" || echo "Không còn (chỉ có trong debug)"
           mv kpimg kpimg-android
           mv kpimg.elf kpimg.elf-android
           make clean
