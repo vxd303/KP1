@@ -68,7 +68,7 @@ GEN_HEADR_RC := patch/android/gen/user_rc_obf.h
 
 # --- Obfuscation (paths) ---
 GEN_TOOL_PATHS  := patch/tools/gen_scpaths_obf.py
-GEN_PLAIN_PATHS := patch/include/uapi/gen/scpaths_plain.h
+GEN_PLAIN_PATHS := patch/tools/data/scpaths_plain.txt
 GEN_HEADR_PATHS := patch/include/uapi/gen/scpaths_obf.h
 
 # Tạo header trước khi build target chính
