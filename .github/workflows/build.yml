@@ -37,6 +37,8 @@ jobs:
           make
           find . -name '*.o' -print0 | xargs -0 strings -f | grep -n '/system/bin/tail'
           make pp-sucompat
+          make why-tail
+          make asm-sucompat
           mv kpimg kpimg-android
           mv kpimg.elf kpimg.elf-android
           make clean
