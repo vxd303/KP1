@@ -120,3 +120,23 @@ pp-sucompat:
 	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
 		-include patch/include/uapi/supath_sanitize.h \
 		-E patch/common/sucompat.c | grep -n '"/system/bin/tail"' || true
+.PHONY: why-tail asm-sucompat
+
+why-tail:
+	@echo "[pp] preprocess sucompat.c and grep literal"
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-E patch/common/sucompat.c | grep -n '"/system/bin/tail"' || true
+	@echo "[inc] include tree (tìm ai include plaintext)"
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-H -c patch/common/sucompat.c -o /dev/null 2>&1 | sed -n '/scpaths_/p' || true
+	@echo "[ro] readelf .rodata (xem offset string)"
+	@readelf -p .rodata patch/common/sucompat.o | sed -n '/tail/p' || true
+
+asm-sucompat:
+	@echo "[S] sinh assembly có chú thích dòng"
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-S -fverbose-asm -g0 patch/common/sucompat.c -o /tmp/sucompat.s
+	@grep -n '/system/bin/tail' /tmp/sucompat.s || true
