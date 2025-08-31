@@ -4,6 +4,11 @@
    Chỉ cần decode getters là đủ. */
 #ifndef __ASSEMBLER__  /* để .S không dính header này */
 #include "patch/include/uapi/gen/scpaths_decode.h"  // kp_get_supercmd(), kp_get_su_path()
+#ifdef KP_STRICT_SUPERCMD
+#  if __builtin_constant_p(SUPERCMD)
+#    error "SUPERCMD is constant in this TU (plaintext leak)"
+#  endif
+#endif
 
 /* Xoá mọi định nghĩa cũ nếu có, ép về getter runtime */
 #ifdef SUPERCMD
