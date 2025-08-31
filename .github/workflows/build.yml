@@ -39,6 +39,8 @@ jobs:
           make pp-sucompat
           make why-tail
           make asm-sucompat
+          make why-tail2
+          make rodata-tail
           mv kpimg kpimg-android
           mv kpimg.elf kpimg.elf-android
           make clean
