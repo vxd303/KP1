@@ -1,31 +1,41 @@
 #!/usr/bin/env python3
-import re, sys, pathlib
+import argparse, pathlib, re, sys, textwrap
 
-def key(i):  # đổi seed/thuật toán tùy ý (nhớ đồng bộ ở decode)
-    return (0x5D ^ ((i*131 + 29) & 0xFF)) & 0xFF
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--input",  required=True)
+ap.add_argument("-o", "--output", required=True)
+args = ap.parse_args()
 
-def enc_bytes(b):
-    return bytes((x ^ key(i)) for i, x in enumerate(b))
+pin  = pathlib.Path(args.input)
+pout = pathlib.Path(args.output)
+txt  = pin.read_text(encoding="utf-8")
 
-def grab(name, text):
-    m = re.search(rf'#define\s+{name}\s+"([^"]+)"', text)
-    if not m: sys.exit(f"[ERR] missing {name} in scpaths_plain.h")
-    return m.group(1).encode('utf-8')
+def grab(name, s):
+    m = re.search(rf'^\s*#\s*define\s+{name}\s+"([^"]+)"', s, re.M)
+    if not m:
+        sys.exit(f"[ERR] missing {name} in {pin}")
+    return m.group(1).encode("utf-8")
 
-pin  = pathlib.Path("patch/include/uapi/gen/scpaths_plain.h")
-pout = pathlib.Path("patch/include/uapi/gen/scpaths_obf.h")
-t = pin.read_text()
+def enc_bytes(b: bytes):
+    # XOR toy; thay thế bằng thuật toán bạn muốn
+    key = 0xA5
+    return bytes((x ^ key) for x in b)
 
-su   = enc_bytes(grab("SU_PATH_PLAIN", t))
-scmd = enc_bytes(grab("SUPERCMD_PLAIN", t))
+def arr(b: bytes):
+    return ", ".join(str(x) for x in b)
 
-def arr(b): return ", ".join(str(x) for x in b)
-pout.parent.mkdir(parents=True, exist_ok=True)
-pout.write_text(f"""#pragma once
+scmd = enc_bytes(grab("SUPERCMD_PLAIN", txt))
+spath = enc_bytes(grab("SU_PATH_PLAIN", txt)) if "SU_PATH_PLAIN" in txt else b""
+
+hdr = textwrap.dedent(f"""\
 /* Auto-generated: DO NOT EDIT. Source: {pin} */
-#define KP_SU_LEN {len(su)}u
+#pragma once
+#include <stddef.h>
 #define KP_SUPERCMD_LEN {len(scmd)}u
-static const unsigned char KP_SU_OBF[KP_SU_LEN] = {{ {arr(su)} }};
 static const unsigned char KP_SUPERCMD_OBF[KP_SUPERCMD_LEN] = {{ {arr(scmd)} }};
+#define KP_SUPERPATH_LEN {len(spath)}u
+static const unsigned char KP_SUPERPATH_OBF[KP_SUPERPATH_LEN] = {{ {arr(spath)} }};
 """)
+
+pout.write_text(hdr, encoding="utf-8")
 print(f"[OK] wrote {pout}")
