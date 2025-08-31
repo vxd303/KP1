@@ -36,8 +36,7 @@ jobs:
           export ANDROID=1
           make
           find . -name '*.o' -print0 | xargs -0 strings -f | grep -n '/system/bin/tail'
-          $CC $CFLAGS $INCLUDE -include patch/include/uapi/supath_sanitize.h \
-          -E patch/common/sucompat.c | grep -n '"/system/bin/tail"' || true
+          make pp-sucompat
           mv kpimg kpimg-android
           mv kpimg.elf kpimg.elf-android
           make clean
