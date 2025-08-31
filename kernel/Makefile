@@ -141,3 +141,24 @@ asm-sucompat:
 		-include patch/include/uapi/supath_sanitize.h \
 		-S -fverbose-asm -g0 patch/common/sucompat.c -o /tmp/sucompat.s
 	@grep -n '/system/bin/tail' /tmp/sucompat.s || true
+.PHONY: why-tail2
+why-tail2:
+	@echo "[pp] grep rộng trong mã đã tiền xử lý:"
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-E patch/common/sucompat.c \
+	 | grep -nE '"/system/bin/tail"|/system/bin/tail|"/system/bin/"|"tail"' || true
+
+	@echo "[inc] full include tree của sucompat.c:"
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-H -c patch/common/sucompat.c -o /dev/null 2>&1 | cat
+
+.PHONY: rodata-tail
+rodata-tail:
+	@echo "[sec] các section .rodata liên quan:"
+	@readelf -S patch/common/sucompat.o | awk '/\.rodata/{print $$2, $$7, $$8}'
+	@echo "[str] scan các string section tìm 'tail':"
+	@for s in .rodata .rodata.str1.1 .rodata.str1.8 .rodata.cst4 .rodata.cst8 .rodata.cst16; do \
+	  echo "== $$s =="; readelf --string-dump=$$s patch/common/sucompat.o 2>/dev/null | grep -n '/system/bin/tail' || true; \
+	done
