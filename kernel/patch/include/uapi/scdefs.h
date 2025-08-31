@@ -95,8 +95,12 @@ struct su_profile {
 #endif
 
 /* Ẩn literal: map trực tiếp sang getter runtime (tương thích sanitizer) */
-#define SUPERCMD (kp_get_supercmd())
-#define SU_PATH  (kp_get_su_path())
+#ifndef SUPERCMD
+#  define SUPERCMD (kp_get_supercmd())
+#endif
+#ifndef SU_PATH
+#  define SU_PATH  (kp_get_su_path())
+#endif
 
 /* Flag file */
 #define SAFE_MODE_FLAG_FILE "/dev/.safe"
