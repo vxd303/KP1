@@ -41,6 +41,7 @@
 
 const char sh_path[] = SH_PATH;
 const char *kp_default_su_path(void) { return SU_PATH; }
+const char *kp_default_supercmd(void) { return SUPERCMD; }
 
 #ifdef ANDROID
 const char legacy_su_path[] = LEGACY_SU_PATH;
@@ -247,7 +248,7 @@ static void handle_before_execve(char **__user u_filename_p, char **__user uargv
          logkfi("uid: %d, to_uid: %d, sctx: %s, cplen: %d, %d\n", uid, to_uid, sctx, cplen, argv_cplen);
         }
 #endif // ANDROID
-    } else if (!strcmp(SUPERCMD, filename)) {
+    } else if (!strcmp(default_supercmd, filename)) {
         void handle_supercmd(char **__user u_filename_p, char **__user uargv);
         handle_supercmd(u_filename_p, uargv);
         return;
