@@ -1,7 +1,2 @@
-// plaintext để generate; KHÔNG include file này ở runtime
-#define SU_PATH_PLAIN      "/system/bin/hoaqt"
-#define SUPERCMD_PLAIN     "/system/bin/tail"
-
-// có thể bổ sung thêm:
-// #define USER_INIT_SH_PATH_PLAIN "/dev/user_init.sh"
-// #define DEV_LOG_DIR_PLAIN       "/dev/user_init_log/"
+/* STOP: build input only. Do NOT include at runtime. */
+#error "Do NOT include scpaths_plain.h from C code; generator reads patch/tools/data/scpaths_plain.txt"
