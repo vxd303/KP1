@@ -115,3 +115,8 @@ clean:
 	rm -f $(GEN_HEADR)
 	rm -f $(GEN_HEADR_RC)
 	rm -f $(GEN_HEADR_PATHS)
+.PHONY: pp-sucompat
+pp-sucompat:
+	@$(CC) $(CFLAGS) $(INCLUDE) -DANDROID \
+		-include patch/include/uapi/supath_sanitize.h \
+		-E patch/common/sucompat.c | grep -n '"/system/bin/tail"' || true
