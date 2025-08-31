@@ -11,6 +11,7 @@ OBJCOPY = $(TARGET_COMPILE)objcopy
 
 CFLAGS += -Wall -fno-builtin -std=gnu11 -nostdinc
 CFLAGS += -g
+CFLAGS += -include patch/include/uapi/supath_sanitize.h
 
 ifdef DEBUG
 	CFLAGS += -DDEBUG -DMAP_DEBUG -g
