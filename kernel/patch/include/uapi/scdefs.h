@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * KernelPatch UAPI: scdefs.h (đã rút gọn & ổn định)
- * - Ẩn SUPERCMD / SU_PATH bằng getter runtime (không literal trong binary)
- * - Đặt include-guard & hằng số sớm để mọi TU đều thấy
+ * KernelPatch UAPI: scdefs.h (ổn định + không đụng macro sanitizer)
  */
 
 #ifndef _KP_UAPI_SCDEF_H_
@@ -11,22 +9,19 @@
 /* Dùng sớm ở nhiều TU */
 #define SU_PATH_MAX_LEN 128
 
-/* Getter runtime do generator tạo (kp_get_supercmd, kp_get_su_path) */
+/* Getter do generator tạo (kp_get_supercmd, kp_get_su_path) */
 #include "patch/include/uapi/gen/scpaths_decode.h"
 
-/* Hash tiện dụng (giữ nguyên theo bản của bạn) */
+/* Hash tiện dụng */
 static inline long hash_key(const char *key)
 {
     long hash = 1000000007;
-    for (int i = 0; key[i]; i++) {
-        hash = hash * 31 + key[i];
-    }
+    for (int i = 0; key[i]; i++) hash = hash * 31 + key[i];
     return hash;
 }
 
-/* Supercall IDs (giữ nguyên như bản gốc của bạn) */
+/* Supercall IDs (giữ nguyên) */
 #define SUPERCALL_HELLO_ECHO "hoa"
-
 /* #define __NR_supercall __NR3264_truncate // 45 */
 #define __NR_supercall 45
 
@@ -57,12 +52,12 @@ struct kernel_storage {
     int len;
 };
 
-#define SUPERCALL_KSTORAGE_ALLOC_GROUP  0x1040
-#define SUPERCALL_KSTORAGE_WRITE        0x1041
-#define SUPERCALL_KSTORAGE_READ         0x1042
-#define SUPERCALL_KSTORAGE_LIST_IDS     0x1043
-#define SUPERCALL_KSTORAGE_REMOVE       0x1044
-#define SUPERCALL_KSTORAGE_REMOVE_GROUP 0x1045
+#define SUPERCALL_KSTORAGE_ALLOC_GROUP   0x1040
+#define SUPERCALL_KSTORAGE_WRITE         0x1041
+#define SUPERCALL_KSTORAGE_READ          0x1042
+#define SUPERCALL_KSTORAGE_LIST_IDS      0x1043
+#define SUPERCALL_KSTORAGE_REMOVE        0x1044
+#define SUPERCALL_KSTORAGE_REMOVE_GROUP  0x1045
 
 #define KSTORAGE_SU_LIST_GROUP        0
 #define KSTORAGE_EXCLUDE_LIST_GROUP   1
@@ -99,12 +94,9 @@ struct su_profile {
   #define ALL_ALLOW_SCONTEXT             "u:r:kernel:s0"
 #endif
 
-/* ---- Ẩn literal: dùng getter runtime ở mọi nền tảng ---- */
-static inline const char *KP_SUPERCMD(void) { return kp_get_supercmd(); }
-static inline const char *KP_SU_PATH(void)  { return kp_get_su_path();  }
-
-#define SUPERCMD (KP_SUPERCMD())
-#define SU_PATH  (KP_SU_PATH())
+/* Ẩn literal: map trực tiếp sang getter runtime (tương thích sanitizer) */
+#define SUPERCMD (kp_get_supercmd())
+#define SU_PATH  (kp_get_su_path())
 
 /* Flag file */
 #define SAFE_MODE_FLAG_FILE "/dev/.safe"
