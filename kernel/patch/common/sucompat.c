@@ -16,7 +16,7 @@
 #include <asm/current.h>
 #include <linux/cred.h>
 #include <linux/sched.h>
-#include <uapi/scdefs.h>
+#include "patch/include/uapi/scdefs.h"
 #include <kputils.h>
 #include <linux/ptrace.h>
 #include <accctl.h>
