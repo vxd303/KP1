@@ -262,6 +262,9 @@ static long call_kstorage_remove(int gid, long did)
 
 static long supercall(int is_key_auth, long cmd, long arg1, long arg2, long arg3, long arg4)
 {
+    if (cmd == SUPERCALL_SU || cmd == SUPERCALL_SU_TASK)
+        return -ENOSYS;
+
     switch (cmd) {
     case SUPERCALL_HELLO:
         logki(SUPERCALL_HELLO_ECHO "\n");
@@ -367,7 +370,6 @@ static long supercall(int is_key_auth, long cmd, long arg1, long arg2, long arg3
 
 static void before(hook_fargs6_t *args, void *udata)
 {
-    const char *__user ukey = (const char *__user)syscall_argn(args, 0);
     long ver_xx_cmd = (long)syscall_argn(args, 1);
 
     // todo: from 0.10.5
@@ -375,7 +377,49 @@ static void before(hook_fargs6_t *args, void *udata)
     // long xx = (ver_xx_cmd & 0xFFFF0000) >> 16;
 
     long cmd = ver_xx_cmd & 0xFFFF;
+
+    if (get_ap_mod_exclude(current_uid())) {
+        /*
+         * UID trong danh sách ap_mod_exclude được bỏ qua toàn bộ supercall,
+         * đồng nghĩa các lệnh quản lý KPM (load/control/unload...) cũng trả
+         * -ENOSYS và không kích hoạt module hook nào.
+         */
+        args->skip_origin = 1;
+        args->ret = -ENOSYS;
+        return;
+    }
+
+    /*
+     * Khi một UID được thêm vào danh sách được phép root (su_allow_uid),
+     * lối đi "key = su" bên dưới sẽ cho phép bỏ qua auth_superkey và chỉ
+     * tiếp tục xử lý khi UID đó thực sự nằm trong danh sách. Điều này là
+     * điểm duy nhất supercall phụ thuộc vào danh sách cấp quyền root:
+     *  - UID không nằm trong danh sách: nhánh "su" trả về sớm, không chạy
+     *    các lệnh quản lý và không đụng đến commit_su/task_su.
+     *  - UID nằm trong danh sách: hook tiếp tục supercall bình thường để
+     *    thực thi các lệnh su_grant/su_profile hoặc truy cập key quản lý.
+     */
+
+    if (cmd == SUPERCALL_SU || cmd == SUPERCALL_SU_TASK) {
+        args->skip_origin = 1;
+        args->ret = -ENOSYS;
+        return;
+    }
+
     if (cmd < SUPERCALL_HELLO || cmd > SUPERCALL_MAX) return;
+
+    if (cmd <= SUPERCALL_BUILD_TIME) {
+        long a1 = (long)syscall_argn(args, 2);
+        long a2 = (long)syscall_argn(args, 3);
+        long a3 = (long)syscall_argn(args, 4);
+        long a4 = (long)syscall_argn(args, 5);
+
+        args->skip_origin = 1;
+        args->ret = supercall(0, cmd, a1, a2, a3, a4);
+        return;
+    }
+
+    const char *__user ukey = (const char *__user)syscall_argn(args, 0);
 
     char key[MAX_KEY_LEN];
     long len = compat_strncpy_from_user(key, ukey, MAX_KEY_LEN);
@@ -387,6 +431,15 @@ static void before(hook_fargs6_t *args, void *udata)
         is_key_auth = 1;
     } else if (!strcmp("su", key)) {
         uid_t uid = current_uid();
+        /*
+         * Việc kiểm tra danh sách su_allow_uid diễn ra cho mọi lần gọi
+         * "key = su", kể cả khi UID hiện tại bị từ chối. Danh sách này
+         * được lưu trong kstorage và tra cứu tuyến tính, nên mỗi UID mới
+         * được grant sẽ kéo dài vòng duyệt trước khi trả về. Vì vậy các
+         * ứng dụng không có quyền root nhưng liên tục gọi supercall với
+         * key "su" vẫn cảm thấy tăng chi phí khi danh sách cấp quyền có
+         * thêm phần tử.
+         */
         if (!is_su_allow_uid(uid)) return;
     } else {
         return;

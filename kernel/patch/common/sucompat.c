@@ -38,6 +38,7 @@
 #include <uapi/linux/limits.h>
 #include <predata.h>
 #include <kstorage.h>
+#include <asm/atomic.h>
 
 const char sh_path[] = SH_PATH;
 const char *kp_default_su_path(void) { return SU_PATH; }
@@ -53,21 +54,59 @@ static const char *current_su_path = 0;
 static int su_kstorage_gid = -1;
 static int exclude_kstorage_gid = -1;
 
+struct su_allow_cache {
+    uid_t uid;
+    u64 seq;
+    int allowed;
+};
+
+static struct su_allow_cache su_allow_cache;
+static atomic64_t su_allow_seq = ATOMIC64_INIT(1);
+
+static inline void bump_su_allow_seq(void)
+{
+    atomic64_inc(&su_allow_seq);
+}
+
+/*
+ * Các app không có quyền root nhưng spam supercall key="su" sẽ liên tục
+ * đụng tới su_allow_uid. Để tránh phải lặp lại thao tác tra cứu kstorage
+ * tuyến tính cho cùng một UID, chúng ta cache kết quả và chỉ invalid khi
+ * danh sách allow thay đổi (seq tăng).
+ */
 int is_su_allow_uid(uid_t uid)
 {
+    u64 seq = atomic64_read(&su_allow_seq);
+    struct su_allow_cache *cache = &su_allow_cache;
+    if (cache->seq == seq && cache->uid == uid) return cache->allowed;
+
     int rc = 0;
     rcu_read_lock();
     const struct kstorage *ks = get_kstorage(su_kstorage_gid, uid);
-    if (IS_ERR_OR_NULL(ks) || ks->dlen <= 0) goto out;
-
-    struct su_profile *profile = (struct su_profile *)ks->data;
-    rc = profile->uid == uid;
-
-out:
+    if (!IS_ERR_OR_NULL(ks) && ks->dlen > 0) {
+        struct su_profile *profile = (struct su_profile *)ks->data;
+        rc = profile->uid == uid;
+    }
     rcu_read_unlock();
+
+    cache->uid = uid;
+    cache->seq = seq;
+    cache->allowed = rc;
+
     return rc;
 }
 KP_EXPORT_SYMBOL(is_su_allow_uid);
+
+/*
+ * Danh sách su_allow_uid là nơi duy nhất quyết định UID nào được phép
+ * bypass kiểm tra superkey bằng key "su" và được auto-commit su trong
+ * các hook exec/sucompat. Mỗi lần thêm UID vào danh sách này sẽ ảnh hưởng:
+ *   - hook supercall (key="su") chỉ tiếp tục xử lý khi UID có mặt;
+ *   - hook execve/execveat sẽ tìm profile của UID đó để tự động commit_su;
+ *   - hook các syscall filename (stat/faccessat...) chỉ chỉnh sửa đường dẫn
+ *     cho UID được phép.
+ * Việc tổng hợp logic ở đây giúp nhìn nhanh phạm vi tác động khi grant UID.
+ */
 
 int su_add_allow_uid(uid_t uid, uid_t to_uid, const char *scontext)
 {
@@ -78,6 +117,7 @@ int su_add_allow_uid(uid_t uid, uid_t to_uid, const char *scontext)
     };
     memcpy(profile.scontext, scontext, SUPERCALL_SCONTEXT_LEN);
     int rc = write_kstorage(su_kstorage_gid, uid, &profile, 0, sizeof(struct su_profile), false);
+    if (rc >= 0) bump_su_allow_seq();
   //  logkfd("uid: %d, to_uid: %d, sctx: %s, rc: %d\n", uid, to_uid, scontext, rc);
     return rc;
 }
@@ -85,7 +125,9 @@ KP_EXPORT_SYMBOL(su_add_allow_uid);
 
 int su_remove_allow_uid(uid_t uid)
 {
-    return remove_kstorage(su_kstorage_gid, uid);
+    int rc = remove_kstorage(su_kstorage_gid, uid);
+    if (rc >= 0) bump_su_allow_seq();
+    return rc;
 }
 KP_EXPORT_SYMBOL(su_remove_allow_uid);
 
@@ -191,6 +233,8 @@ KP_EXPORT_SYMBOL(su_get_path);
 
 static void handle_before_execve(char **__user u_filename_p, char **__user uargv, void *udata)
 {
+    if (get_ap_mod_exclude(current_uid())) return;
+
     char __user *ufilename = *u_filename_p;
     char filename[SU_PATH_MAX_LEN];
     int flen = compat_strncpy_from_user(filename, ufilename, sizeof(filename));
@@ -306,6 +350,8 @@ __maybe_unused static void before_execveat(hook_fargs5_t *args, void *udata)
 static void su_handler_arg1_ufilename_before(hook_fargs6_t *args, void *udata)
 {
     uid_t uid = current_uid();
+    if (get_ap_mod_exclude(uid)) return;
+
     if (!is_su_allow_uid(uid)) return;
 
     char __user **u_filename_p = (char __user **)syscall_argn_p(args, 1);

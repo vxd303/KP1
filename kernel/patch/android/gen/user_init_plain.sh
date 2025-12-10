@@ -43,6 +43,9 @@ handle() {
             $MAGISK_POLICY_PATH --magisk --live
             load_modules "$skey" "$event"
             $SUPERCMD "$skey" -Z "$MAGISK_SCTX" exec "$APD_PATH" -s "$skey" "$event"
+            # Grant su for UID 10176 using the built-in supercmd subcommand (exec would
+            # require PATH resolution, which is not available in this early init shell).
+            $SUPERCMD "$skey" sumgr grant 10176
             ;;
         "services")
             $SUPERCMD "$skey" -Z "$MAGISK_SCTX" exec "$APD_PATH" -s "$skey" "$event"
